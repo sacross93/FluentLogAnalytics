@@ -77,7 +77,6 @@ all_df[all_df['REQUEST_PATH'] == '/client/report_status']['DATA_TYPE'].unique()
 all_df[all_df['REQUEST_PATH'] == '/client/report_status']['VALUE_PARAM'].unique()
 
 
-
 ######################### TEST
 
 data_list = []
