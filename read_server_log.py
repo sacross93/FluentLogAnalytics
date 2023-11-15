@@ -68,13 +68,21 @@ for log_path in glob_files:
 
 all_df['REQUEST_PATH'].unique()
 all_df.to_csv('/srv/project_data/log_analytics/all_df.csv', index=False)
+recording = all_df[all_df['REQUEST_PATH'] == '/client/recording_info']
+numeric = all_df[all_df['REQUEST_PATH'] == '/client/numeric_stream']
+recording.to_csv('/srv/project_data/log_analytics/recording.csv', index=False)
+numeric.to_csv('/srv/project_data/log_analytics/numeric.csv', index=False)
 
 len(all_df)
 all_df.keys()
 all_df['REQUEST_PATH'].unique()
-all_df[all_df['REQUEST_PATH'] == '/client/report_status']['KEY'].unique()
-all_df[all_df['REQUEST_PATH'] == '/client/report_status']['DATA_TYPE'].unique()
-all_df[all_df['REQUEST_PATH'] == '/client/report_status']['VALUE_PARAM'].unique()
+all_df[all_df['REQUEST_PATH'] == '/client/recording_info']['KEY'].unique()
+all_df[all_df['REQUEST_PATH'] == '/client/recording_info']['DATA_TYPE'].unique()
+all_df[all_df['REQUEST_PATH'] == '/client/recording_info']['VALUE_PARAM'].unique()
+
+all_df[(all_df['REQUEST_PATH'] == '/client/recording_info') & (all_df['KEY'] == 'PARAM')][['VALUE', 'VALUE_PARAM', 'KEY']]
+
+
 
 
 ######################### TEST
