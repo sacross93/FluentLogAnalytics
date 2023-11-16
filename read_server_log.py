@@ -1,7 +1,7 @@
 import json
 import glob
 import numpy as np
-from datetime import datetime
+from datetime import datetime, timedelta
 import pandas as pd
 import re
 
@@ -140,3 +140,50 @@ df['REQUEST_PATH'].unique()
 data_dict.get("path", "")
 
 df[df['REQUEST_PATH'] == '/client/numeric_stream']
+
+
+##### TEST
+path = '/srv/web_log/'
+date = str((datetime.now() - timedelta(days=1)).date()).replace('-','')
+glob_files = glob.glob(path + 'client.' + date +'*.log')
+
+
+for file in glob_files:
+    with open(file, 'r') as log_file:
+        log_lines = log_file.readlines()
+    for line in log_lines:
+        temp = line.split('\t')[2].strip()
+        a = json.loads(temp)
+        if 'numeric_stream' in temp:
+            print(a)
+####### fix
+
+
+for line in log_lines:
+    timestamp_str, _, json_data = line.strip().split('\t', 2)
+    json_data = json_data.replace("'", '"')
+
+    match = pattern.search(json_data)
+    if match:
+        data_str = match.group(1)
+
+        data_str = data_str.replace('"', '\\"')
+        json_data = json_data.replace(f'"{data_str}"', f'"{data_str}"')
+
+    try:
+        data_dict = json.loads(json_data)
+    except json.JSONDecodeError as e:
+        try:
+            data_str = json_data.replace('"[', '[').replace(']"', ']').replace(" (Insp. O2 - Exp. O2)", '').replace(
+                " (Liquid)", '').replace('"data":"', '"data":')
+            data_str = data_str[:data_str.find('message') - 2] + "}"
+            data_str = data_str.replace(" (Insp. O2 - Exp. O2)", "")
+            data_str = data_str.replace('"Consumption Desflurane (Liquid)"', '"Consumption Desflurane"')
+            data_str = data_str.replace('}}"', '}}')
+            data_dict = json.loads(data_str)
+            data_dict['REQUEST_PATH'] = data_dict['path']
+        except:
+            print(f"Error decoding JSON data: {e}")
+            print(f"Problematic JSON-like string: {json_data}")
+            continue
+            # break
