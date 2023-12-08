@@ -71,13 +71,10 @@ while result==False:
     rowLength = len(beds_group)
 
     fig = plt.figure(figsize=(24, 14))
-    # gs = GridSpec(nrows=rowLength, ncols=colLength, figure=fig, hspace=0.5, wspace=0.1)
     gs = GridSpec(nrows=7, ncols=6, figure=fig, hspace=0.5, wspace=0.1)
     fig.suptitle(f'{date}-Network QC', fontsize=26, fontweight='bold')
     fig.subplots_adjust(top=0.9)
 
-    # x_min = df['time'].min()
-    # x_max = df['time'].max()
     x_min = (datetime.strptime(date, "%Y%m%d")).astimezone(timeZone)
     x_max = (datetime.strptime(date, "%Y%m%d") + timedelta(days=1)).astimezone(timeZone)
     y_min = -85
@@ -86,15 +83,6 @@ while result==False:
     for rIdx, row in enumerate(rowIdx):
         colSearch = sorted(df['bed'][df['bed_group'] == row].unique())
         for cIdx in range(6):
-            # ax = fig.add_subplot(gs[rIdx, cIdx])
-            # ax.set_xlim(x_min, x_max)
-            # ax.set_ylim(y_min, y_max)
-            # ax.xaxis.set_major_formatter(mdates.DateFormatter('%d, %H:%M'))
-            # ax.tick_params(axis='x', rotation=45)
-            # if rIdx != 6:
-            #     ax.xaxis.set_visible(False)
-            # if cIdx != 0:
-            #     ax.yaxis.set_visible(False)
             try:
                 tempData = df[df['bed'] == colSearch[cIdx]].sort_values('time', ascending=True)
                 ax = fig.add_subplot(gs[rIdx, cIdx])
@@ -103,7 +91,14 @@ while result==False:
                 continue
             if tempData.empty == False:
                 ax.plot(tempData['time'], tempData['rssi'], linewidth=2, marker='o', markersize=4, markerfacecolor='black', markeredgewidth='0')
-                ax.text(x_min + timedelta(minutes=20), y_max - 12, tempData['bed'].unique()[0], fontsize=12)
+                # ax.text(x_min + timedelta(minutes=20), y_max - 12, tempData['bed'].unique()[0], fontsize=12)
+                if tempData[tempData['rssi'] <= -80].empty == False:
+                    ax.text(x_min + timedelta(minutes=20), y_max - 12, tempData['bed'].unique()[0], fontsize=12, color='red')
+                    cnt += 1
+                    if cnt >= 50:  ## Stop standard
+                        result = True
+                else:
+                    ax.text(x_min + timedelta(minutes=20), y_max - 12, tempData['bed'].unique()[0], fontsize=12)
             else:
                 ax.text(x_max - timedelta(hours=16), -63, "No Data", fontsize=20, color='red')
                 continue
@@ -117,9 +112,8 @@ while result==False:
                 ax.yaxis.set_visible(False)
             ax.axhline(-80, color='red', linestyle='--')
 
-    # plt.xlabel("ee", fontsize=20, )
     plt.subplots_adjust(left=0.03, right=0.97, top=0.93, bottom=0.07)
-    plt.show()
+    plt.savefig(f'/srv/project_data/log_analytics/networkQCpig/{date}.png')
+    # plt.show()
+    plt.close()
 
-
-    result=True
